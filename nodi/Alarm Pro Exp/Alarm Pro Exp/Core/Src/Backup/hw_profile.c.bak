@@ -1,0 +1,87 @@
+#include "hw_profile.h"
+#include "zone_monitor.h"
+
+#include <string.h>
+
+#define IDENTIFY_TICKS   15u
+
+typedef struct {
+    GPIO_TypeDef *port;
+    uint16_t pin;
+} gpio_output_t;
+
+static const gpio_output_t s_outputs[EXP_BOARD_OUTPUT_COUNT] = {
+    { GPIOB, GPIO_PIN_8 },
+    { GPIOB, GPIO_PIN_9 },
+    { GPIOB, GPIO_PIN_10 },
+    { GPIOB, GPIO_PIN_11 },
+    { GPIOB, GPIO_PIN_15 },
+    { GPIOC, GPIO_PIN_0 },
+    { GPIOC, GPIO_PIN_1 },
+    { GPIOC, GPIO_PIN_2 },
+};
+
+static bool s_identify_enabled = false;
+static bool s_identify_state = false;
+static uint32_t s_identify_counter = 0;
+
+uint32_t hw_profile_read_inputs(void)
+{
+	return zone_monitor_get_legacy_bitmap();
+}
+
+void hw_profile_write_outputs(uint32_t bitmap)
+{
+    for (uint8_t idx = 0u; idx < EXP_BOARD_OUTPUT_COUNT; ++idx) {
+        const gpio_output_t *out = &s_outputs[idx];
+        GPIO_PinState state = (bitmap & (1u << idx)) ? GPIO_PIN_SET : GPIO_PIN_RESET;
+        HAL_GPIO_WritePin(out->port, out->pin, state);
+    }
+}
+
+void hw_profile_identify(bool enable)
+{
+    s_identify_enabled = enable;
+    s_identify_counter = 0u;
+    if (!enable) {
+        s_identify_state = false;
+        HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
+    }
+}
+
+void hw_profile_tick_10ms(void)
+{
+    if (!s_identify_enabled) {
+        return;
+    }
+
+    if (++s_identify_counter >= IDENTIFY_TICKS) {
+        s_identify_counter = 0u;
+        s_identify_state = !s_identify_state;
+        HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, s_identify_state ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    }
+}
+
+void hw_profile_get_unique_id(uint8_t *out_uid, size_t len)
+{
+    if (!out_uid || len == 0u) {
+        return;
+    }
+
+    const uint32_t *uid_regs = (const uint32_t *)0x1FFFF7E8u;
+    uint8_t buffer[12] = {0};
+
+    for (size_t i = 0; i < 3; ++i) {
+        uint32_t word = uid_regs[i];
+        buffer[(i * 4u) + 0u] = (uint8_t)(word & 0xFFu);
+        buffer[(i * 4u) + 1u] = (uint8_t)((word >> 8) & 0xFFu);
+        buffer[(i * 4u) + 2u] = (uint8_t)((word >> 16) & 0xFFu);
+        buffer[(i * 4u) + 3u] = (uint8_t)((word >> 24) & 0xFFu);
+    }
+
+    size_t copy_len = (len < sizeof(buffer)) ? len : sizeof(buffer);
+    memcpy(out_uid, buffer, copy_len);
+    if (len > copy_len) {
+        memset(out_uid + copy_len, 0, len - copy_len);
+    }
+}

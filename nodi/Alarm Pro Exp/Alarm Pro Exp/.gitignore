@@ -1,0 +1,24 @@
+# STM32CubeIDE / Eclipse
+.metadata/
+.ipch/
+*.launch
+*.log
+# Build directories
+Debug/
+Release/
+# Objects & outputs
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+# Other temp
+*.swp
+*.tmp
+# VSCode (se usi)
+.vscode/
+# Mac
+.DS_Store
+
