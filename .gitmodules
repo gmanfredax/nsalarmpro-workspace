@@ -1,6 +1,0 @@
-[submodule "centrale"]
-	path = centrale
-	url = https://github.com/gmanfredax/esp32-alarm-pro.git
-[submodule "nodi"]
-	path = nodi
-	url = https://github.com/gmanfredax/alarm-pro-exp.git
