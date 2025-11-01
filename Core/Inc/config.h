@@ -1,0 +1,56 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <stdint.h>
+
+#define NSAP_FW_VERSION            "1.0.0"
+#define NSAP_DEVICE_ID_PREFIX      "nsap-"
+#define NSAP_ADC3_AVAILABLE        0
+#if NSAP_ADC3_AVAILABLE
+#define NSAP_MAX_ZONES             10
+#else
+#define NSAP_MAX_ZONES             9
+#endif
+#define NSAP_ZONE_OVERSAMPLE       16U
+#define NSAP_ZONE_MEDIAN_DEPTH     5U
+#define NSAP_ZONE_MOVING_AVG       8U
+#define NSAP_ADC_FULL_SCALE        4095.0f
+#define NSAP_V12_SCALE_RATIO       (11.0f)
+#define NSAP_VBAT_SCALE_RATIO      (4.0f)
+#define NSAP_ADC_REFERENCE_VOLT    3.0f
+#define NSAP_TAMPER_SAMPLE_MEDIAN  5U
+#define NSAP_TAMPER_MOVING_AVG     4U
+#define NSAP_TAMPER_SHORT_PCT      10.0f
+#define NSAP_TAMPER_OPEN_PCT       80.0f
+#define NSAP_DHCP_HOSTNAME_PREFIX  "nsalarmpro-"
+#define NSAP_UDP_DISCOVERY_PORT    17123
+#define NSAP_UDP_DISCOVERY_PERIOD  5000U
+#define NSAP_TASK_STACK_NET        2048U
+#define NSAP_TASK_STACK_MQTT       6144U
+#define NSAP_TASK_STACK_HTTP       4096U
+#define NSAP_TASK_STACK_ZONES      3072U
+#define NSAP_TASK_STACK_TAMPER     2048U
+#define NSAP_TASK_STACK_CAN        2048U
+#define NSAP_TASK_STACK_OUTPUTS    2048U
+#define NSAP_TASK_STACK_DIAG       2048U
+#define NSAP_TASK_STACK_LED        1024U
+#define NSAP_TASK_PRIO_HIGH        5U
+#define NSAP_TASK_PRIO_MED         4U
+#define NSAP_TASK_PRIO_LOW         3U
+#define NSAP_TASK_PRIO_BACKGROUND  2U
+#define NSAP_HTTP_OFF_DELAY_MS     9000U
+#define NSAP_CAN_HEARTBEAT_MS      1000U
+#define NSAP_CAN_BUSOFF_TIMEOUT_MS 5000U
+#define NSAP_MQTT_PORT_SECURE      8883
+#define NSAP_MQTT_RETRY_LIMIT      5U
+#define NSAP_MQTT_RETRY_DELAY_MS   15000U
+#define NSAP_BATTERY_LOW_VOLT      11.4f
+#define NSAP_BATTERY_CRIT_VOLT     10.8f
+#define NSAP_BATTERY_HYST_VOLT     0.2f
+#define NSAP_ZONE_FAULT_THRES      5.0f
+#define NSAP_FLASH_BASE_ADDR       ((uint32_t)0x08060000)
+#define NSAP_FLASH_PAGE_SIZE       ((uint32_t)0x4000)
+#define NSAP_FLASH_MAX_SIZE        ((uint32_t)0x40000)
+#define NSAP_TLS_MAX_CONTENT_LEN   4096
+
+#endif

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+    <name>NSAlarmPro</name>
+    <comment>STM32CubeIDE project for the NSAlarmPro control panel</comment>
+    <projects>
+    </projects>
+    <buildSpec>
+        <buildCommand>
+            <name>com.st.stm32cube.ide.mcu.cubemx.project.builder</name>
+            <triggers>clean,full,incremental,</triggers>
+            <arguments>
+            </arguments>
+        </buildCommand>
+        <buildCommand>
+            <name>com.st.stm32cube.ide.mcu.gnu.managedbuild.builder</name>
+            <triggers>clean,full,incremental,</triggers>
+            <arguments>
+            </arguments>
+        </buildCommand>
+        <buildCommand>
+            <name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
+            <triggers>full,incremental,</triggers>
+            <arguments>
+            </arguments>
+        </buildCommand>
+    </buildSpec>
+    <natures>
+        <nature>com.st.stm32cube.ide.mcu.MCUProjectNature</nature>
+        <nature>com.st.stm32cube.ide.mcu.MCUSourceNature</nature>
+        <nature>com.st.stm32cube.ide.mcu.gnu.managedbuild.nature</nature>
+        <nature>org.eclipse.cdt.core.cnature</nature>
+        <nature>org.eclipse.cdt.core.ccnature</nature>
+        <nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+        <nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+    </natures>
+    <linkedResources>
+    </linkedResources>
+</projectDescription>
