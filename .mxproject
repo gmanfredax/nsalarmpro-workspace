@@ -1,0 +1,10 @@
+[PreviousCubeIDEFiles]
+ProjectManager.WorkspacePath=.
+ProjectManager.ProjectName=NSAlarmPro
+ProjectManager.UnderRoot=true
+ProjectManager.ProjectType=STM32CubeIDE
+ProjectManager.IsEmbeddedProject=true
+ProjectManager.ToolchainId=STM32CubeIDE
+ProjectManager.SelectedParts=STM32F407VETx
+ProjectManager.SelectedRuntimes=STM32Cube
+ProjectManager.IocFile=NSAlarmPro_F407.ioc

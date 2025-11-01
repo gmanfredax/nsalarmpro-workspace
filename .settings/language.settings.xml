@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project>
+    <configuration id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.debug.1712841925" name="Debug">
+        <language id="org.eclipse.cdt.core.gcc" name="GNU C"/>
+        <language id="org.eclipse.cdt.core.g++" name="GNU C++"/>
+    </configuration>
+    <configuration id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.release.1324567890" name="Release">
+        <language id="org.eclipse.cdt.core.gcc" name="GNU C"/>
+        <language id="org.eclipse.cdt.core.g++" name="GNU C++"/>
+    </configuration>
+</project>

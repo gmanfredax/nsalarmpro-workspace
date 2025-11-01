@@ -6,6 +6,10 @@ Questo repository contiene il progetto STM32CubeIDE per la centrale NSAlarmPro b
 
 ```
 NSAlarmPro_F407.ioc
+.cproject
+.project
+.mxproject
+.settings/
 Core/
   Inc/
   Src/
@@ -15,6 +19,12 @@ Middlewares/Third_Party/
 lwipopts.h
 tools/apply_post_gen.sh
 ```
+
+## Importazione in STM32CubeIDE
+
+1. Avvia STM32CubeIDE e scegli **File → Import… → General → Existing Projects into Workspace**.
+2. Seleziona come directory radice la cartella del repository (`…/nsalarmpro-workspace`).
+3. L’IDE rileva automaticamente il progetto **NSAlarmPro** grazie ai file `.project`/`.cproject`; conferma l’import e apri l’`.ioc` per eventuali rigenerazioni.
 
 ## Funzionalità principali
 
