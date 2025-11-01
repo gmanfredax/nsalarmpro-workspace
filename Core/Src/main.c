@@ -27,6 +27,8 @@ IWDG_HandleTypeDef hiwdg;
 void nsap_watchdog_kick(void);
 static void NSAP_ADC1_ConfigChannels(void);
 static void NSAP_CAN_Reconfigure(void);
+static void MX_ADC3_Init(void);
+ADC_HandleTypeDef hadc3;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -44,10 +46,11 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+  MX_ADC3_Init();
   NSAP_ADC1_ConfigChannels();
   MX_CAN1_Init();
   NSAP_CAN_Reconfigure();
@@ -276,9 +279,55 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void MX_ADC3_Init(void)
+{
+  ADC_ChannelConfTypeDef sConfig = {0};
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  __HAL_RCC_ADC3_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  hadc3.Instance = ADC3;
+  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc3.Init.ScanConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
+  hadc3.Init.DiscontinuousConvMode = DISABLE;
+  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc3.Init.NbrOfConversion = 2;
+  hadc3.Init.DMAContinuousRequests = DISABLE;
+  hadc3.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  if (HAL_ADC_Init(&hadc3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 static void NSAP_ADC1_ConfigChannels(void)
 {
-  static const uint32_t channel_sequence[15] = {
+  static const uint32_t channel_sequence[] = {
     ADC_CHANNEL_0,
     ADC_CHANNEL_3,
     ADC_CHANNEL_4,
@@ -289,9 +338,7 @@ static void NSAP_ADC1_ConfigChannels(void)
     ADC_CHANNEL_10,
     ADC_CHANNEL_12,
     ADC_CHANNEL_13,
-    ADC_CHANNEL_8,
     ADC_CHANNEL_VBAT,
-    ADC_CHANNEL_12,
     ADC_CHANNEL_TEMPSENSOR,
     ADC_CHANNEL_VREFINT
   };
@@ -299,6 +346,12 @@ static void NSAP_ADC1_ConfigChannels(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   __HAL_RCC_PWR_CLK_ENABLE();
+
+  hadc1.Init.NbrOfConversion = (uint32_t)(sizeof(channel_sequence) / sizeof(channel_sequence[0]));
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   for (uint32_t rank = 0; rank < (sizeof(channel_sequence) / sizeof(channel_sequence[0])); rank++)
   {
@@ -425,18 +478,12 @@ void ETH_IRQHandler(void)
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  if (hadc->Instance == ADC1)
-  {
-    adc_frontend_on_dma_half_complete();
-  }
+  adc_frontend_on_dma_half_complete(hadc);
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-  if (hadc->Instance == ADC1)
-  {
-    adc_frontend_on_dma_complete();
-  }
+  adc_frontend_on_dma_complete(hadc);
 }
 
 void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)

@@ -3,13 +3,13 @@
 
 #include "stm32f4xx_hal.h"
 
-#define PIN_LED_POWER_GPIO_PORT    GPIOG
+#define PIN_LED_POWER_GPIO_PORT    GPIOD
 #define PIN_LED_POWER_PIN          GPIO_PIN_0
-#define PIN_LED_ARMED_GPIO_PORT    GPIOG
+#define PIN_LED_ARMED_GPIO_PORT    GPIOD
 #define PIN_LED_ARMED_PIN          GPIO_PIN_1
-#define PIN_LED_MAINT_GPIO_PORT    GPIOG
+#define PIN_LED_MAINT_GPIO_PORT    GPIOD
 #define PIN_LED_MAINT_PIN          GPIO_PIN_2
-#define PIN_LED_ALARM_GPIO_PORT    GPIOG
+#define PIN_LED_ALARM_GPIO_PORT    GPIOD
 #define PIN_LED_ALARM_PIN          GPIO_PIN_3
 #define PIN_LED_RGB_R_PORT         GPIOD
 #define PIN_LED_RGB_R_PIN          GPIO_PIN_12
