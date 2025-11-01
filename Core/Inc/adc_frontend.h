@@ -10,12 +10,22 @@
 extern "C" {
 #endif
 
+#if NSAP_ADC3_AVAILABLE
 typedef enum {
     ADC_CHANNEL_ZONE_BASE = 0,
-    ADC_CHANNEL_VBAT = 10,
-    ADC_CHANNEL_TEMP = 11,
-    ADC_CHANNEL_VREF = 12
+    ADC_CHANNEL_VBAT = NSAP_MAX_ZONES,
+    ADC_CHANNEL_TEMP = NSAP_MAX_ZONES + 1,
+    ADC_CHANNEL_VREF = NSAP_MAX_ZONES + 2
 } adc_frontend_channel_t;
+#else
+typedef enum {
+    ADC_CHANNEL_ZONE_BASE = 0,
+    ADC_CHANNEL_TAMPER = NSAP_MAX_ZONES,
+    ADC_CHANNEL_VBAT = NSAP_MAX_ZONES + 1,
+    ADC_CHANNEL_TEMP = NSAP_MAX_ZONES + 2,
+    ADC_CHANNEL_VREF = NSAP_MAX_ZONES + 3
+} adc_frontend_channel_t;
+#endif
 
 typedef struct {
     float value_mv;

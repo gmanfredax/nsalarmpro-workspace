@@ -432,7 +432,7 @@ void mqtt_cli_publish_telemetry(void)
         return;
     }
     adc_sample_t v12;
-    adc_frontend_get_v12(&v12);
+    bool have_v12 = adc_frontend_get_v12(&v12);
     battery_snapshot_t battery;
     battery_get(&battery);
     cpu_temp_sample_t temp;
@@ -440,7 +440,7 @@ void mqtt_cli_publish_telemetry(void)
     char payload[256];
     snprintf(payload, sizeof(payload),
              "{\"v12\":%.2f,\"vbat\":%.2f,\"cpu_temp\":%.2f}",
-             v12.value_mv / 1000.0f,
+             have_v12 ? (v12.value_mv / 1000.0f) : 0.0f,
              battery.voltage,
              temp.celsius);
     mqtt_cli_publish_event("telemetry/voltages", payload, 0, false);

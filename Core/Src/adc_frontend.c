@@ -13,12 +13,15 @@ extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_adc1;
 extern void Error_Handler(void);
 
-#define ADC_CHANNEL_COUNT 13
+#if NSAP_ADC3_AVAILABLE
+#define ADC_CHANNEL_COUNT (NSAP_MAX_ZONES + 3U)
+#else
+#define ADC_CHANNEL_COUNT (NSAP_MAX_ZONES + 4U)
+#endif
 #define ADC_DMA_DEPTH     (NSAP_ZONE_OVERSAMPLE)
 #define ADC_AUX_OVERSAMPLE 32U
 
 static uint16_t adc_dma_buffer[ADC_CHANNEL_COUNT * ADC_DMA_DEPTH];
-static SemaphoreHandle_t adc3_mutex;
 static adc_sample_t zone_samples[NSAP_MAX_ZONES];
 static adc_sample_t v12_sample;
 static adc_sample_t vbat_sample;
@@ -28,8 +31,11 @@ static uint32_t last_update_tick;
 
 static void adc_process_block(const uint16_t *data);
 static bool adc_refresh_aux(void);
-static bool adc3_acquire_samples(uint16_t *v12_raw, uint16_t *tamper_raw);
+#if NSAP_ADC3_AVAILABLE
+static SemaphoreHandle_t adc3_mutex;
 extern ADC_HandleTypeDef hadc3;
+static bool adc3_acquire_samples(uint16_t *v12_raw, uint16_t *tamper_raw);
+#endif
 static float convert_to_voltage(uint16_t raw);
 static float ratio_from_voltage(float voltage_mv);
 
@@ -41,11 +47,20 @@ void adc_frontend_init(void)
     memset(&temp_sample, 0, sizeof(temp_sample));
     memset(&tamper_sample, 0, sizeof(tamper_sample));
     last_update_tick = 0;
-    adc3_mutex = xSemaphoreCreateMutex();
+#if !NSAP_ADC3_AVAILABLE
+    v12_sample.value_mv = 0.0f;
+    v12_sample.timestamp = 0U;
+#endif
+#if NSAP_ADC3_AVAILABLE
+    if (adc3_mutex == NULL)
+    {
+        adc3_mutex = xSemaphoreCreateMutex();
+    }
     if (adc3_mutex == NULL)
     {
         Error_Handler();
     }
+#endif
     (void)adc_refresh_aux();
 }
 
@@ -80,12 +95,18 @@ static void adc_process_block(const uint16_t *data)
     uint32_t sum_vbat = 0;
     uint32_t sum_temp = 0;
     uint32_t sum_vref = 0;
+#if !NSAP_ADC3_AVAILABLE
+    uint32_t sum_tamper = 0;
+#endif
     for (uint32_t sample = 0; sample < ADC_DMA_DEPTH; sample++)
     {
         const uint16_t *row = &data[sample * ADC_CHANNEL_COUNT];
-        sum_vbat += row[10];
-        sum_temp += row[11];
-        sum_vref += row[12];
+        sum_vbat += row[ADC_CHANNEL_VBAT];
+        sum_temp += row[ADC_CHANNEL_TEMP];
+        sum_vref += row[ADC_CHANNEL_VREF];
+#if !NSAP_ADC3_AVAILABLE
+        sum_tamper += row[ADC_CHANNEL_TAMPER];
+#endif
     }
     float vref_mv = convert_to_voltage(sum_vref / ADC_DMA_DEPTH);
     (void)vref_mv;
@@ -102,6 +123,12 @@ static void adc_process_block(const uint16_t *data)
     temp_sample.timestamp = tick;
     cpu_temp_update(temp_sample.value_mv);
 
+#if !NSAP_ADC3_AVAILABLE
+    tamper_sample.raw = sum_tamper / ADC_DMA_DEPTH;
+    tamper_sample.value_mv = convert_to_voltage(tamper_sample.raw);
+    tamper_sample.ratio = tamper_sample.value_mv / (NSAP_ADC_REFERENCE_VOLT * 1000.0f);
+    tamper_sample.timestamp = tick;
+#endif
     last_update_tick = tick;
 }
 
@@ -112,7 +139,13 @@ static float convert_to_voltage(uint16_t raw)
 
 static float ratio_from_voltage(float voltage_mv)
 {
-    float supply = v12_sample.value_mv > 0.0f ? v12_sample.value_mv : 12000.0f;
+    float supply = 12000.0f;
+#if NSAP_ADC3_AVAILABLE
+    if (v12_sample.value_mv > 0.0f)
+    {
+        supply = v12_sample.value_mv;
+    }
+#endif
     return (voltage_mv / supply) * 100.0f;
 }
 
@@ -148,9 +181,14 @@ bool adc_frontend_get_v12(adc_sample_t *sample)
     {
         return false;
     }
+#if NSAP_ADC3_AVAILABLE
     (void)adc_refresh_aux();
     *sample = v12_sample;
     return (xTaskGetTickCount() - v12_sample.timestamp) < pdMS_TO_TICKS(500);
+#else
+    *sample = v12_sample;
+    return false;
+#endif
 }
 
 bool adc_frontend_get_vbat(adc_sample_t *sample)
@@ -181,9 +219,14 @@ bool adc_frontend_get_tamper(adc_sample_t *sample)
     }
     (void)adc_refresh_aux();
     *sample = tamper_sample;
+    if (tamper_sample.timestamp == 0U)
+    {
+        return false;
+    }
     return (xTaskGetTickCount() - tamper_sample.timestamp) < pdMS_TO_TICKS(500);
 }
 
+#if NSAP_ADC3_AVAILABLE
 static bool adc_refresh_aux(void)
 {
     TickType_t now = xTaskGetTickCount();
@@ -279,3 +322,10 @@ static bool adc3_acquire_samples(uint16_t *v12_raw, uint16_t *tamper_raw)
     *tamper_raw = sum_tamper / ADC_AUX_OVERSAMPLE;
     return true;
 }
+#else
+static bool adc_refresh_aux(void)
+{
+    (void)last_update_tick;
+    return true;
+}
+#endif

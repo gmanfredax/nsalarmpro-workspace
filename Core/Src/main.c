@@ -27,8 +27,10 @@ IWDG_HandleTypeDef hiwdg;
 void nsap_watchdog_kick(void);
 static void NSAP_ADC1_ConfigChannels(void);
 static void NSAP_CAN_Reconfigure(void);
+#if NSAP_ADC3_AVAILABLE
 static void MX_ADC3_Init(void);
 ADC_HandleTypeDef hadc3;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -50,7 +52,9 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+#if NSAP_ADC3_AVAILABLE
   MX_ADC3_Init();
+#endif
   NSAP_ADC1_ConfigChannels();
   MX_CAN1_Init();
   NSAP_CAN_Reconfigure();
@@ -279,6 +283,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+#if NSAP_ADC3_AVAILABLE
 static void MX_ADC3_Init(void)
 {
   ADC_ChannelConfTypeDef sConfig = {0};
@@ -324,6 +329,7 @@ static void MX_ADC3_Init(void)
     Error_Handler();
   }
 }
+#endif
 
 static void NSAP_ADC1_ConfigChannels(void)
 {
@@ -337,7 +343,7 @@ static void NSAP_ADC1_ConfigChannels(void)
     ADC_CHANNEL_9,
     ADC_CHANNEL_10,
     ADC_CHANNEL_12,
-    ADC_CHANNEL_13,
+    ADC_CHANNEL_13, /* zona 10 su HW ZGT6 oppure tamper analogico su HW VET6 */
     ADC_CHANNEL_VBAT,
     ADC_CHANNEL_TEMPSENSOR,
     ADC_CHANNEL_VREFINT

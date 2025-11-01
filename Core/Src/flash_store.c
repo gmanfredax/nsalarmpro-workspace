@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #define FLASH_STORE_MAGIC          0x4E534150UL
-#define FLASH_STORE_VERSION        0x0002U
+#define FLASH_STORE_VERSION        0x0003U
 #define FLASH_STORE_SLOT_COUNT     2U
 #define FLASH_STORE_SLOT_SIZE      (NSAP_FLASH_MAX_SIZE / FLASH_STORE_SLOT_COUNT)
 

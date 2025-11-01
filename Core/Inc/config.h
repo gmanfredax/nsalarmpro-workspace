@@ -5,7 +5,12 @@
 
 #define NSAP_FW_VERSION            "1.0.0"
 #define NSAP_DEVICE_ID_PREFIX      "nsap-"
+#define NSAP_ADC3_AVAILABLE        0
+#if NSAP_ADC3_AVAILABLE
 #define NSAP_MAX_ZONES             10
+#else
+#define NSAP_MAX_ZONES             9
+#endif
 #define NSAP_ZONE_OVERSAMPLE       16U
 #define NSAP_ZONE_MEDIAN_DEPTH     5U
 #define NSAP_ZONE_MOVING_AVG       8U

@@ -22,7 +22,7 @@ tools/apply_post_gen.sh
 - Provisioning HTTP locale (LwIP httpd) con SSE e progressi guidati dai pattern LED RGB.
 - Gestione claim MQTTS con memorizzazione credenziali in Flash, retry/backoff e pubblicazione Birth/LWT.
 - Telemetria MQTT: tensioni, zone analogiche, stato tamper 24h, diagnostica CAN ed eventi dedicati.
-- Zone locali (10 ingressi analogici EOL) con filtri, profili e auto-esclusione persistente.
+- Zone locali (9 ingressi analogici disponibili sulla variante STM32F407VET6; la build definitiva per STM32F407ZGT6 ripristina 10 ingressi) con filtri, profili e auto-esclusione persistente.
 - Tamper bus analogico continuo con soglie SHORT/NORMAL/OPEN e fallback digitale.
 - Gestione bus CAN 125 kbps per espansioni con heartbeat, auto-discovery e pubblicazione diagnostica.
 - Uscite locali (sirene, nebbiogeno, OUT1/2) con timeout.
@@ -36,9 +36,11 @@ tools/apply_post_gen.sh
 - **LED RGB provisioning (TIM4 PWM)**: PD12 (CH1 - rosso), PD13 (CH2 - verde), PD14 (CH3 - blu).
 - **LED di stato discreti**: PD0 (POWER), PD1 (ARMED), PD2 (MAINT), PD3 (ALARM).
 - **Relè locali**: PE8 (SIREN_INT), PE9 (SIREN_EXT), PE10 (NEBBIOGENO), PE11 (OUT1), PE12 (OUT2).
-- **Ingressi zone analogiche**: ADC1 IN0 (PA0), IN3 (PA3), IN4 (PA4), IN5 (PA5), IN6 (PA6), IN8 (PB0), IN9 (PB1), IN10 (PC0), IN12 (PC2), IN13 (PC3).
-- **Telemetria alimentazioni**: V12 su ADC3 IN4 (PF6) con partitore dedicato, batteria tramite canale interno VBAT (1/4 Vbat) con `NSAP_VBAT_SCALE_RATIO=4.0`.
-- **Tamper bus analogico**: ADC3 IN5 (PF7) con calibrazione dinamica; fallback digitale su PC7 con pull-up interno.
+- **Ingressi zone analogiche**: ADC1 IN0 (PA0), IN3 (PA3), IN4 (PA4), IN5 (PA5), IN6 (PA6), IN8 (PB0), IN9 (PB1), IN10 (PC0), IN12 (PC2). L'ingresso ADC1 IN13 (PC3) è temporaneamente dedicato al tamper analogico nella variante F407VET6.
+- **Telemetria alimentazioni**: lettura VBAT tramite canale interno (1/4 Vbat). La misura V12 è disattivata sulla variante STM32F407VET6 (`NSAP_ADC3_AVAILABLE=0`) e viene pubblicata a 0 V; riabilitare ADC3 e il partitore su PF6 impostando `NSAP_ADC3_AVAILABLE=1` per la scheda STM32F407ZGT6.
+- **Tamper bus analogico**: ADC1 IN13 (PC3) con calibrazione dinamica; fallback digitale su PC7 con pull-up interno. Nella variante finale con ADC3 disponibile il tamper torna su PF7.
+
+> **Nota variante STM32F407VET6**: per agevolare i test su schede prive dei pin PF6/PF7 l'opzione `NSAP_ADC3_AVAILABLE` in `config.h` è impostata a `0`. In questa configurazione restano operativi 9 ingressi di zona, la misura V12 viene riportata a 0 V e il tamper analogico utilizza ADC1 IN13. Per il layout definitivo STM32F407ZGT6 ripristinare `NSAP_ADC3_AVAILABLE=1`, ricollegare il partitore V12 e riportare il tamper su ADC3.
 
 ## Costruzione
 

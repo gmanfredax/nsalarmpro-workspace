@@ -315,14 +315,14 @@ void diag_publish_now(void)
   can_node_info_t nodes[CAN_MAX_NODES];
   uint8_t node_count = 0U;
 
-  adc_frontend_get_v12(&v12_sample);
+  bool have_v12 = adc_frontend_get_v12(&v12_sample);
   adc_frontend_get_vbat(&vbat_sample);
   cpu_temp_get(&temp_sample);
   battery_get(&battery_snapshot);
   tamper_bus_get_snapshot(&tamper_snapshot);
   can_bus_get_snapshot(nodes, &node_count);
 
-  float v12_voltage = v12_sample.value_mv / 1000.0f;
+  float v12_voltage = have_v12 ? (v12_sample.value_mv / 1000.0f) : 0.0f;
   float vbat_voltage = (vbat_sample.value_mv > 0.0f) ? (vbat_sample.value_mv / 1000.0f) : battery_snapshot.voltage;
   float cpu_celsius = temp_sample.celsius;
 
