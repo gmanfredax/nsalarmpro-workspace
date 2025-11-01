@@ -87,4 +87,7 @@
             <resource resourceType="PROJECT" workspacePath="/NSAlarmPro"/>
         </configuration>
     </storageModule>
+    <storageModule moduleId="scannerConfiguration">
+        <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+    </storageModule>
 </cproject>
