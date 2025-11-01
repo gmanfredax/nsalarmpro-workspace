@@ -25,6 +25,8 @@ static void NSAP_PreOSInit(void);
 static void NSAP_WatchdogInit(void);
 IWDG_HandleTypeDef hiwdg;
 void nsap_watchdog_kick(void);
+static void NSAP_ADC1_ConfigChannels(void);
+static void NSAP_CAN_Reconfigure(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -41,10 +43,14 @@ int main(void)
   /* USER CODE BEGIN 1 */
   HAL_Init();
   SystemClock_Config();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+  NSAP_ADC1_ConfigChannels();
   MX_CAN1_Init();
+  NSAP_CAN_Reconfigure();
   MX_ETH_Init();
   MX_TIM4_Init();
   NSAP_WatchdogInit();
@@ -270,6 +276,153 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void NSAP_ADC1_ConfigChannels(void)
+{
+  static const uint32_t channel_sequence[15] = {
+    ADC_CHANNEL_0,
+    ADC_CHANNEL_3,
+    ADC_CHANNEL_4,
+    ADC_CHANNEL_5,
+    ADC_CHANNEL_6,
+    ADC_CHANNEL_8,
+    ADC_CHANNEL_9,
+    ADC_CHANNEL_10,
+    ADC_CHANNEL_12,
+    ADC_CHANNEL_13,
+    ADC_CHANNEL_8,
+    ADC_CHANNEL_VBAT,
+    ADC_CHANNEL_12,
+    ADC_CHANNEL_TEMPSENSOR,
+    ADC_CHANNEL_VREFINT
+  };
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  __HAL_RCC_PWR_CLK_ENABLE();
+
+  for (uint32_t rank = 0; rank < (sizeof(channel_sequence) / sizeof(channel_sequence[0])); rank++)
+  {
+    sConfig.Channel = channel_sequence[rank];
+    sConfig.Rank = rank + 1U;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+    {
+      Error_Handler();
+    }
+  }
+
+  if (HAL_ADCEx_EnableVbat(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+static void NSAP_CAN_Reconfigure(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  hcan1.Init.Prescaler = 12;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_11TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  GPIO_InitStruct.Pin = PIN_CAN_STB_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(PIN_CAN_STB_PORT, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(PIN_CAN_STB_PORT, PIN_CAN_STB_PIN, GPIO_PIN_RESET);
+}
+
+void HAL_ETH_MspInit(ETH_HandleTypeDef* heth)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if (heth->Instance == ETH)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_ETH_CLK_ENABLE();
+    __HAL_RCC_ETHMAC_CLK_ENABLE();
+    __HAL_RCC_ETHMACRX_CLK_ENABLE();
+    __HAL_RCC_ETHMACTX_CLK_ENABLE();
+    __HAL_RCC_ETHMACPTP_CLK_ENABLE();
+
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+
+    GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_7;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ETH_IRQn);
+  }
+}
+
+void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if (hcan->Instance == CAN1)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_CAN1_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF9_CAN1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+    HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
+  }
+}
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if (htim->Instance == TIM4)
+  {
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  }
+}
+
+void CAN1_RX0_IRQHandler(void)
+{
+  HAL_CAN_IRQHandler(&hcan1);
+}
+
+void CAN1_SCE_IRQHandler(void)
+{
+  HAL_CAN_IRQHandler(&hcan1);
+}
+
+void ETH_IRQHandler(void)
+{
+  HAL_ETH_IRQHandler(&heth);
+}
+
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
   if (hadc->Instance == ADC1)

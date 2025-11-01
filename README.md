@@ -29,6 +29,17 @@ tools/apply_post_gen.sh
 - Monitoraggio batteria, temperatura CPU e log MQTT di eventi critici.
 - Task FreeRTOS dedicati (HTTP provisioning, MQTT, zone, tamper, CAN, uscite, diagnostica, LED).
 
+## Mappatura hardware di riferimento
+
+- **Ethernet RMII**: PA1 (REF_CLK), PA2 (MDIO), PA7 (CRS_DV), PB11 (TX_EN), PB12 (TXD0), PB13 (TXD1), PC1 (MDC), PC4 (RXD0), PC5 (RXD1).
+- **CAN1 250 kbps**: PA11 (RX) e PA12 (TX) con traslatore in standby su PA8 (`PIN_CAN_STB`).
+- **LED RGB provisioning (TIM4 PWM)**: PD12 (CH1 - rosso), PD13 (CH2 - verde), PD14 (CH3 - blu).
+- **LED di stato discreti**: PG0 (POWER), PG1 (ARMED), PG2 (MAINT), PG3 (ALARM).
+- **Relè locali**: PE8 (SIREN_INT), PE9 (SIREN_EXT), PE10 (NEBBIOGENO), PE11 (OUT1), PE12 (OUT2).
+- **Ingressi zone analogiche**: ADC1 IN0 (PA0), IN3 (PA3), IN4 (PA4), IN5 (PA5), IN6 (PA6), IN8 (PB0), IN9 (PB1), IN10 (PC0), IN12 (PC2), IN13 (PC3).
+- **Telemetria alimentazioni**: V12 su ADC1 IN8, batteria tramite canale interno VBAT (1/4 Vbat) con `NSAP_VBAT_SCALE_RATIO=4.0`.
+- **Tamper bus analogico**: ADC1 IN12 con calibrazione dinamica; fallback digitale su PC7 con pull-up interno.
+
 ## Costruzione
 
 1. Aprire `NSAlarmPro_F407.ioc` con STM32CubeIDE (versione 1.14 o superiore consigliata).

@@ -11,7 +11,7 @@
 #define NSAP_ZONE_MOVING_AVG       8U
 #define NSAP_ADC_FULL_SCALE        4095.0f
 #define NSAP_V12_SCALE_RATIO       (11.0f)
-#define NSAP_VBAT_SCALE_RATIO      (11.0f)
+#define NSAP_VBAT_SCALE_RATIO      (4.0f)
 #define NSAP_ADC_REFERENCE_VOLT    3.0f
 #define NSAP_TAMPER_SAMPLE_MEDIAN  5U
 #define NSAP_TAMPER_MOVING_AVG     4U
