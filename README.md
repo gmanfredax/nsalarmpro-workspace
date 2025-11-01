@@ -5,7 +5,7 @@ Questo repository contiene il progetto STM32CubeIDE per la centrale NSAlarmPro b
 ## Struttura
 
 ```
-NSAlarmPro_F407.ioc
+NSAlarmPro.ioc
 .cproject
 .project
 .mxproject
@@ -54,7 +54,7 @@ tools/apply_post_gen.sh
 
 ## Costruzione
 
-1. Aprire `NSAlarmPro_F407.ioc` con STM32CubeIDE (versione 1.14 o superiore consigliata).
+1. Aprire `NSAlarmPro.ioc` con STM32CubeIDE (versione 1.14 o superiore consigliata).
 2. Generare il codice; gli hook di questo repository rispettano le sezioni `/* USER CODE BEGIN */`.
 3. Copiare le librerie complete di mbedTLS e Paho Embedded C nelle rispettive cartelle se necessarie per la build reale.
 4. Compilare con il toolchain GCC fornito da CubeIDE.
